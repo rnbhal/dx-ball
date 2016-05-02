@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>DX BALL</title>
+    <script src="phaser.min.js"></script>
+</head>
+<body>
+
+<script type="text/javascript">
+
+var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+
+function preload() {
+
+    game.load.image('paddle', 'assets/paddle.png');
+    game.load.image('ball', 'assets/ball.png');
+    game.load.image('brick_blue', 'assets/brick_blue.png');
+}
+
+
+var pad;
+var ball;
+var cursors;
+var score=0;
+var score_text;
+
+function create() {
+
+    //Initializing Game Physics
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+
+    game.stage.backgroundColor = "black";
+   
+    pad=game.add.sprite(290, 540, 'paddle');
+    ball=game.add.sprite(360, 520, 'ball');
+   
+    //Enabling physics on paddle, ball.
+    game.physics.arcade.enable(pad);
+    game.physics.arcade.enable(ball);
+    
+    //Won't let objects go out of bounds.
+    pad.body.collideWorldBounds = true;
+    ball.body.collideWorldBounds = true;
+
+    //immovable
+    pad.body.immovable = true;
+    ball.body.bounce.setTo(1,1);
+    
+    ball.body.velocity.y = 0;
+    //Score Text Initialised
+    score_text = game.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: 'white' });
+
+    //Keyboard Input Keys
+    input.keyboard.enabled = true;
+}
+
+function update() {
+
+    //  Collisions
+    game.physics.arcade.collide(pad, ball);   
+
+    //Resets the velocity of the paddle.
+    pad.body.velocity.x =0
+    if(ball.bottom === 600)
+    {
+            ball.body.collideWorldBounds = false;
+            game.add.text(280,220,'GAME OVER!!!',{fontSize:'32px', fill:'Blue'});
+           // game.state.restart();
+    }
+    if(game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)){
+        ball.body.velocity.x = 100;
+        ball.body.velocity.y = 100;
+    }
+    if(game.input.keyboard.isDown(Phaser.Keyboard.LEFT)){
+       // pad.body.velocity.x = -250;
+        pad.x += -10;
+    }
+    else if(game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)){
+       // pad.body.velocity.x = 250;
+        pad.x += 10;
+    }
+}
+</script>
+
+</body>
+</html>
