@@ -9,7 +9,7 @@
 
 <script type="text/javascript">
 
-var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
+var game = new Phaser.Game(1000, 800, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
 function preload() {
 
@@ -23,6 +23,7 @@ var pad;
 var ball;
 var cursors;
 var score=0;
+var bricks_blue;
 var score_text;
 
 function create() {
@@ -31,14 +32,18 @@ function create() {
     game.physics.startSystem(Phaser.Physics.ARCADE);
 
     game.stage.backgroundColor = "black";
-   
-    pad=game.add.sprite(290, 540, 'paddle');
-    ball=game.add.sprite(360, 520, 'ball');
+   	
+    bricks_blue = game.add.group();
+
+
+    pad=game.add.sprite(390, 740, 'paddle');
+    ball=game.add.sprite(460, 720, 'ball');
    
     //Enabling physics on paddle, ball.
     game.physics.arcade.enable(pad);
     game.physics.arcade.enable(ball);
-    
+    bricks_blue.enableBody = true;
+
     //Won't let objects go out of bounds.
     pad.body.collideWorldBounds = true;
     ball.body.collideWorldBounds = true;
@@ -50,6 +55,21 @@ function create() {
     ball.body.velocity.y = 0;
     //Score Text Initialised
     score_text = game.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: 'white' });
+    
+
+
+    //  Here we'll create bricks
+    
+    for(var j=0; j<8; j++)
+    {	
+    	for (var i = j+1; i <= 15-j; i++)
+    	{
+        
+    	    bricks_blue.create(i * 60, (j*25) + 100, 'brick_blue');
+    	    //brick.body.immovable = true;
+    	}    
+    }
+	
 
     //Keyboard Input Keys
     input.keyboard.enabled = true;
@@ -60,17 +80,20 @@ function update() {
     //  Collisions
     game.physics.arcade.collide(pad, ball);   
 
+    game.physics.arcade.overlap(ball, bricks_blue, collectBricks, null, this);
+
+
     //Resets the velocity of the paddle.
     pad.body.velocity.x =0
-    if(ball.bottom === 600)
+    if(ball.bottom === 800)
     {
             ball.body.collideWorldBounds = false;
-            game.add.text(280,220,'GAME OVER!!!',{fontSize:'32px', fill:'Blue'});
+            game.add.text(380,320,'GAME OVER!!!',{fontSize:'32px', fill:'Blue'});
            // game.state.restart();
     }
     if(game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)){
-        ball.body.velocity.x = 100;
-        ball.body.velocity.y = 100;
+        ball.body.velocity.x = 1000;
+        ball.body.velocity.y = -1000;
     }
     if(game.input.keyboard.isDown(Phaser.Keyboard.LEFT)){
        // pad.body.velocity.x = -250;
@@ -81,6 +104,19 @@ function update() {
         pad.x += 10;
     }
 }
+
+function collectBricks (ball, brick_blue) {
+    
+    game.add.text(380,320,'GAME OVER!!!',{fontSize:'32px', fill:'Blue'});
+    // Removes the brick from the screen
+    brick_blue.kill();
+
+    //  Add and update the score
+    score += 10;
+    scoreText.text = 'Score: ' + score;
+
+}
+
 </script>
 
 </body>
