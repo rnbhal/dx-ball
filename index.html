@@ -1,9 +1,17 @@
 <!doctype html>
 <html lang="en">
 <head>
+    <style>
+    #text {
+    color: black;
+    font-weight: bold;
+    font-size : 24px;
+}
+    </style>
     <meta charset="UTF-8" />
     <title>DX BALL</title>
     <script src="phaser.min.js"></script>
+    <script src="level.js"></script>
 </head>
 <body>
 
@@ -20,10 +28,13 @@ function preload() {
     game.load.image('brick_green', 'assets/brick_green.png');
     game.load.image('brick_purple', 'assets/brick_purple.png');
     game.load.image('brick_yellow', 'assets/brick_yellow.png');
+    game.load.image('brick_black', 'assets/brick_black.png');
+    game.load.image('brick_brown', 'assets/brick_brown.png');
     game.load.image('brick_d_golden', 'assets/brick_d_golden.png');
  	game.load.image('brick_l_golden', 'assets/brick_l_golden.png');
     game.load.image('bound_v', 'assets/bound_v.png');
     game.load.image('bound_h', 'assets/bound_h.png');
+    
 
 }
 
@@ -33,28 +44,33 @@ var v_x;
 var v_y;
 var s;
 var d;
+var brick_text;
 
 var ball;
 var cursors;
 var score=0;
 var bricks_blue;
 var score_text;
-
-var bounds;
+var lives = 3;
+var live_score;
+var no_of_bricks;
+var bool=0;
+var end_text;
+var end_text2;
+var pause_text;
+var level = 1;
+    
+var boundary;
 var bricks_golden;
 var bricks_l_golden;
-//var bricks_inv;
 
 
 function create() {
 
     //Initializing Game Physics
     game.physics.startSystem(Phaser.Physics.ARCADE);
-
+    
     game.stage.backgroundColor = "black";
-   	
-    bricks_blue = game.add.group();
-
 
     pad=game.add.sprite(390, 740, 'paddle');
     ball=game.add.sprite(460, 720, 'ball');
@@ -62,77 +78,71 @@ function create() {
     //Enabling physics on paddle, ball.
     game.physics.arcade.enable(pad);
     game.physics.arcade.enable(ball);
-    bricks_blue.enableBody = true;
+    
 
     //Won't let objects go out of bounds.
-    pad.body.collideWorldBounds = true;
+    //pad.body.collideWorldBounds = true;
     //ball.body.collideWorldBounds = true;
 
     //immovable
     pad.body.immovable = true;
     ball.body.bounce.setTo(1,1);
-    //CHECK
-    pad.body.bounce.setTo(1);
-    
+    ball.checkWorldBounds = true;
+    //CHECK 
     ball.body.velocity.y = 0;
 
     //Score Text Initialised
     score_text = game.add.text(35, 35, 'Score: 0', { fontSize: '32px', fill: 'white' });
+    live_text = game.add.text(35, 65, 'Lives : '+ lives, { fontSize: '32px', fill: 'white' });
+    level_text = game.add.text(820, 35, 'Level : '+level, { fontSize: '32px', fill: 'white' });
+    end_text2 = game.add.text(380,400,'Continue in 5',{fontSize:'32px', fill:'Black'});
     
-    v_x = game.add.text(600, 200, 'Speed x: 200', { fontSize: '32px', fill: 'white' });
-    v_y = game.add.text(600, 220, 'Speed y: 200', { fontSize: '32px', fill: 'white' });
-    s = game.add.text(600, 240, 'Speed : 200*1.414', { fontSize: '32px', fill: 'white' });
-    d = game.add.text(600, 350, 'Distance :', { fontSize: '32px', fill: 'white' });
     
-
-    //  Here we'll create bricks
-
-  	
-    for(var j=0; j<8; j++)
-    {	
-    	for (var i = j+1; i <= 15-j; i++)
-    	{
-        	if(i%2==0){
-        		var brick = bricks_blue.create(i * 60, (j*25) + 100, 'brick_blue');
-    	    	brick.body.immovable = true;
-    	    }
-    	    else{
-    	    	var brick = bricks_blue.create(i * 60, (j*25) + 100, 'brick_green');
-    	    	brick.body.immovable = true;
-    	    }
-    	}    
-    }
-	
-	//bricks_golden.create(600, 400, 'brick_d_golden');
+    //v_x = game.add.text(600, 200, 'Speed x: 200', { fontSize: '32px', fill: 'white' });
+    //v_y = game.add.text(600, 220, 'Speed y: 200', { fontSize: '32px', fill: 'white' });
+    //s = game.add.text(600, 240, 'Speed : 200*1.414', { fontSize: '32px', fill: 'white' });
+    //d = game.add.text(600, 350, 'Distance :', { fontSize: '32px', fill: 'white' });    
+    //brick intialization 
+    
+    bricks_single = game.add.group();
+    bricks_single.enableBody = true;
     
     bricks_golden = game.add.group();    
     bricks_golden.enableBody = true;
 
     bricks_l_golden = game.add.group();
 	bricks_l_golden.enableBody = true;
-
     
-    for(var k=2; k<15; k++)
-    {
-    	var brick2 = bricks_golden.create(k * 60, 350, 'brick_d_golden');
-    	brick2.body.immovable = true;
-    	
-    }
+    bricks_black = game.add.group();    
+    bricks_black.enableBody = true;
 
+    bricks_brown = game.add.group();
+	bricks_brown.enableBody = true;
+    
     //BOUNDARY
-    bounds = game.add.group();
-    bounds.enableBody = true;
-    var b1 = bounds.create(10, 0, 'bound_v');
+    boundary = game.add.group();
+    boundary.enableBody = true;
+    var b1 = boundary.create(0, 0, 'bound_v');
     b1.body.immovable = true;
-    var b2 = bounds.create(975, 0, 'bound_v');
-    b2.body.immovable = true;
-    var b3 = bounds.create(0, 10, 'bound_h');
-    b3.body.immovable = true;
+    b1 = boundary.create(985, 0, 'bound_v');
+    b1.body.immovable = true;
+    b1 = boundary.create(0, 0, 'bound_h');
+    b1.body.immovable = true;
+    
+    //  level initialization
+    if(level == 1)
+       level1();
+    else if(level == 2)
+        level2();
+    else
+        level3();
     
 
     //Keyboard Input Keys
-    input.keyboard.enabled = true;
-
+    game.input.keyboard.enabled = true;
+    
+    esckey = this.input.keyboard.addKey(Phaser.Keyboard.ESC);
+    esckey.onDown.add(togglePause, this);
     //game.state.add('begin', create);
 
 }
@@ -141,56 +151,131 @@ function update() {
 
     //  Collisions
     game.physics.arcade.collide(pad, ball, collide_pad, null, this);   
-
-    game.physics.arcade.collide(ball, bricks_blue, collectBricks, null, this);
+    
+    game.physics.arcade.collide(ball, bricks_single, collectBricks, null, this);
 
     game.physics.arcade.collide(ball, bricks_golden, collectDGoldBricks, null, this);
 
     game.physics.arcade.collide(ball, bricks_l_golden, collectLGoldBricks, null, this);
-    game.physics.arcade.collide(ball, bounds);
-    //CHECK
-    game.physics.arcade.collide(pad, bounds);
-
-
-    //Move the ball with paddle.
-    if(ball.body.speed == 0){
-        ball.x = pad.x + 70;
-    }
-
-    //Resets the velocity of the paddle.
-    pad.body.velocity.x =0
-    if(ball.bottom >= 795)
-    {
-            //ball.body.collideWorldBounds = false;
-            game.add.text(380,320,'GAME OVER!!!',{fontSize:'32px', fill:'Red'});
-            //Necessary to kill ball, otherwise keeps going down.
-            ball.kill();
-            //game.state.start('begin');
-
-    }
-    if(game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)){
+    
+    game.physics.arcade.collide(ball, bricks_black, collectLGoldBricks, null, this);
+    
+    game.physics.arcade.collide(ball, bricks_brown, collectLGoldBricks, null, this);
+    
+    game.physics.arcade.collide(ball, boundary);
+    
+    
+    if(bool == 0 && game.input.keyboard.isDown(Phaser.Keyboard.SPACEBAR)){
         ball.body.velocity.x = 400;
         ball.body.velocity.y = -300;
+        bool =1;
     }
-    if(game.input.keyboard.isDown(Phaser.Keyboard.LEFT)){
+    else if(game.input.keyboard.isDown(Phaser.Keyboard.LEFT)){
        // pad.body.velocity.x = -250;
         pad.x += -10;
+        if(pad.left <= 15)
+            pad.x = 15;
+        //Move the ball with paddle.
+        if(ball.body.speed == 0){
+        ball.x = pad.x + 70;
+        }
     }
-    else if(game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)){
+    else if(game.input.keyboard.isDown(Phaser.Keyboard.RIGHT)) {
        // pad.body.velocity.x = 250;
         pad.x += 10;
+        if(pad.x >= 825)
+            pad.x = 825;
+        //Move the ball with paddle.
+        if(ball.body.speed == 0){
+        ball.x = pad.x + 70;
+        }
     }
-    v_x.text = 'Speed x: '+ ball.body.velocity.x;
-    v_y.text = 'Speed y: '+ ball.body.velocity.y;
-    s.text = 'Speed : '+ ball.body.speed;
+    else {
+        pad.body.velocity.x =0
+    }
+    
+    if(no_of_bricks === 0)
+        {
+            ball.velocity = 0;
+            pad.reset(390, 740);
+            ball.reset(pad.x+70, 720);
+            if(level == 1)
+            {
+                level2();
+                level = 2;
+                level_text.text = 'Level: '+level;
+            }
+            else if(level == 2)
+            {
+                level3();
+                level = 3;
+                level_text.text = 'Level: '+level;
+            }
+        }
+    
+    ball.events.onOutOfBounds.add(livelost, this);
+    
+    //v_x.text = 'Speed x: '+ ball.body.velocity.x;
+    //v_y.text = 'Speed y: '+ ball.body.velocity.y;
+    //s.text = 'Speed : '+ ball.body.speed;
 }
+    
+function livelost(ball) {
+    lives--;
+    live_text.text = 'Lives :' + lives;
+    if(lives == 0) {
+            end_text = game.add.text(380,320,'GAME OVER!!!',{fontSize:'32px', fill:'Red'});
+            //Necessary to kill ball, otherwise keeps going down.
+            ball.kill();
+            bool = 0;
+        end_text2.destroy();
+            end_text2 = game.add.text(380,400,'Restarting in '+game.time.events.duration,{fontSize:'32px', fill:'Blue'});
+            game.time.events.add(Phaser.Timer.SECOND * 10, gameover, this);
+            //game.state.start('begin');
+        }
+    else {
+    ball.velocity = 0;
+    ball.reset(pad.x + 70, 720);
+    bool = 0;
+    }
 
+}
+    
+function togglePause() {
+
+    game.paused = (game.paused) ? false : true;
+    if(game.paused)
+        pause_text = game.add.text(450,400,'Paused',{fontSize:'32px', fill:'Red'});
+    else
+        pause_text.destroy();
+
+}
+    
+function gameover () {
+    delete_sprites();
+    create();
+}
+    
+function delete_sprites () {
+    ball.kill();
+    end_text.destroy();
+    end_text2.destroy();
+    score_text.destroy();
+    live_text.destroy();
+    pad.kill();
+    bricks_single.removeAll();
+    bricks_golden.removeAll();
+    bricks_l_golden.removeAll();
+    bricks_black.removeAll();
+    bricks_brown.removeAll();
+}
 function collectBricks (ball, brick_blue) {
     
     
     // Removes the brick from the screen
     brick_blue.kill();
-
+    no_of_bricks--;
+    //brick_text.text = 'Bricks(called) : ' + no_of_bricks;
     //  Add and update the score
     score += 10;
     score_text.text = 'Score: ' + score;
@@ -201,7 +286,6 @@ function collectDGoldBricks (ball, brick_d_golden) {
     
     var x = brick_d_golden.x;
     var y =brick_d_golden.y;
-
     brick_d_golden.kill();
 
     var brick1 = bricks_l_golden.create(x, y, 'brick_l_golden');
@@ -212,17 +296,20 @@ function collectLGoldBricks (ball, brick_l_golden) {
     
     // Removes the brick from the screen
     brick_l_golden.kill();
-
+    no_of_bricks--;
+    //brick_text.text = 'Bricks : ' + no_of_bricks;
     //  Add and update the score
     score += 30;
     score_text.text = 'Score: ' + score;
 }
 
+
 function render () {
 
     //debug helper
-    game.debug.spriteInfo(ball, 32, 400);
-    game.debug.spriteInfo(pad, 600, 32);
+    end_text2.text = 'Continue in ' + game.time.events.duration;
+    //game.debug.spriteInfo(ball, 32, 400);
+    //game.debug.spriteInfo(pad, 600, 600);
 
 }
 
@@ -231,7 +318,7 @@ function collide_pad (pad, ball) {
 
 	var b_speed = ball.body.speed;
 
-	d.text = 'Distance ' + dist;
+	//d.text = 'Distance ' + dist;
 	if(dist<0 && dist>-98){
 		ball.body.velocity.x = -400 + dist;	
 		ball.body.velocity.y = -Math.sqrt(Math.pow(b_speed, 2) - Math.pow(ball.body.velocity.x, 2));
@@ -245,6 +332,11 @@ function collide_pad (pad, ball) {
 }
 
 </script>
-
+<div id="text">Press Esc key to toggle pause.
+    <br>
+    Use cursor key to move paddle left/right
+    <br>
+    Use Space to start the game
+</div>
 </body>
 </html>
