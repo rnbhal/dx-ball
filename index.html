@@ -14,7 +14,7 @@
     <script src="level.js"></script>
 </head>
 <body>
-
+<div>
 <script type="text/javascript">
 
 var game = new Phaser.Game(1000, 800, Phaser.AUTO, '', { preload: preload, create: create, update: update, render: render });
@@ -51,7 +51,7 @@ var cursors;
 var score=0;
 var bricks_blue;
 var score_text;
-var lives = 3;
+var lives;
 var live_score;
 var no_of_bricks;
 var bool=0;
@@ -92,6 +92,7 @@ function create() {
     ball.body.velocity.y = 0;
 
     //Score Text Initialised
+    live = 3;
     score_text = game.add.text(35, 35, 'Score: 0', { fontSize: '32px', fill: 'white' });
     live_text = game.add.text(35, 65, 'Lives : '+ lives, { fontSize: '32px', fill: 'white' });
     level_text = game.add.text(820, 35, 'Level : '+level, { fontSize: '32px', fill: 'white' });
@@ -141,7 +142,7 @@ function create() {
     //Keyboard Input Keys
     game.input.keyboard.enabled = true;
     
-    esckey = this.input.keyboard.addKey(Phaser.Keyboard.ESC);
+    esckey = game.input.keyboard.addKey(Phaser.Keyboard.ESC);
     esckey.onDown.add(togglePause, this);
     //game.state.add('begin', create);
 
@@ -332,6 +333,7 @@ function collide_pad (pad, ball) {
 }
 
 </script>
+    </div>
 <div id="text">Press Esc key to toggle pause.
     <br>
     Use cursor key to move paddle left/right

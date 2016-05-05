@@ -20,6 +20,7 @@ function level1(){
     
     for(var k=2; k<15; k++)
     {
+        no_of_bricks++;
     	var brick2 = bricks_golden.create(k * 60, 350, 'brick_d_golden');
     	brick2.body.immovable = true;
     }
@@ -29,11 +30,6 @@ function level2 () {
     bool = 0;
     no_of_bricks = 0;
     
-    bricks_golden = game.add.group();
-    bricks_golden.enableBody = true;
-    
-    bricks_l_golden = game.add.group();
-	bricks_l_golden.enableBody = true;
 
     var brick = bricks_golden.create(600, 600, 'brick_d_golden');
     brick.body.immovable = true;
