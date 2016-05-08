@@ -79,24 +79,21 @@ function create() {
     game.physics.arcade.enable(pad);
     game.physics.arcade.enable(ball);
     
-
-    //Won't let objects go out of bounds.
-    //pad.body.collideWorldBounds = true;
-    //ball.body.collideWorldBounds = true;
-
     //immovable
     pad.body.immovable = true;
     ball.body.bounce.setTo(1,1);
+    
+
     ball.checkWorldBounds = true;
-    //CHECK 
+    
     ball.body.velocity.y = 0;
 
     //Score Text Initialised
-    live = 3;
+    lives = 3;
     score_text = game.add.text(35, 35, 'Score: 0', { fontSize: '32px', fill: 'white' });
     live_text = game.add.text(35, 65, 'Lives : '+ lives, { fontSize: '32px', fill: 'white' });
     level_text = game.add.text(820, 35, 'Level : '+level, { fontSize: '32px', fill: 'white' });
-    end_text2 = game.add.text(380,400,'Continue in 5',{fontSize:'32px', fill:'Black'});
+    end_text2 = game.add.text(1000,400,'Restarting in 5',{fontSize:'32px', fill:'Black'});
     
     
     //v_x = game.add.text(600, 200, 'Speed x: 200', { fontSize: '32px', fill: 'white' });
@@ -159,9 +156,9 @@ function update() {
 
     game.physics.arcade.collide(ball, bricks_l_golden, collectLGoldBricks, null, this);
     
-    game.physics.arcade.collide(ball, bricks_black, collectLGoldBricks, null, this);
+    game.physics.arcade.collide(ball, bricks_black, collectBlackBricks, null, this);
     
-    game.physics.arcade.collide(ball, bricks_brown, collectLGoldBricks, null, this);
+    game.physics.arcade.collide(ball, bricks_brown, collectBrownBricks, null, this);
     
     game.physics.arcade.collide(ball, boundary);
     
@@ -271,12 +268,11 @@ function delete_sprites () {
     bricks_brown.removeAll();
 }
 function collectBricks (ball, brick_blue) {
-    
-    
+
     // Removes the brick from the screen
     brick_blue.kill();
     no_of_bricks--;
-    //brick_text.text = 'Bricks(called) : ' + no_of_bricks;
+    
     //  Add and update the score
     score += 10;
     score_text.text = 'Score: ' + score;
@@ -304,11 +300,31 @@ function collectLGoldBricks (ball, brick_l_golden) {
     score_text.text = 'Score: ' + score;
 }
 
+function collectBlackBricks (ball, brick_black) {
+    
+    var x = brick_black.x;
+    var y =brick_black.y;
+    brick_black.kill();
+
+    var brick1 = bricks_brown.create(x, y, 'brick_brown');
+    brick1.body.immovable = true;
+}
+
+function collectBrownBricks (ball, brick_brown) {
+    
+    // Removes the brick from the screen
+    brick_brown.kill();
+    no_of_bricks--;
+    //brick_text.text = 'Bricks : ' + no_of_bricks;
+    //  Add and update the score
+    score += 50;
+    score_text.text = 'Score: ' + score;
+}
 
 function render () {
 
     //debug helper
-    end_text2.text = 'Continue in ' + game.time.events.duration;
+    end_text2.text = 'Restarting in ' + game.time.events.duration;
     //game.debug.spriteInfo(ball, 32, 400);
     //game.debug.spriteInfo(pad, 600, 600);
 
